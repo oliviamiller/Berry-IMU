@@ -1,0 +1,6 @@
+dist/
+build/
+viam-env/
+venv/
+.canon.yaml
+__pycache__/
