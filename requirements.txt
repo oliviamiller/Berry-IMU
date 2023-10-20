@@ -1,1 +1,3 @@
 viam-sdk
+pyberryimu @ git+https://github.com/hbldh/pyberryimu
+smbus-cffi

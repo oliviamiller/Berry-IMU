@@ -2,7 +2,7 @@ import asyncio
 import sys
 from viam.module.module import Module
 from viam.components.movement_sensor import MovementSensor
-from berryimu import Berryimu
+from .berryimu import Berryimu
 
 async def main():
     module = Module.from_args()
