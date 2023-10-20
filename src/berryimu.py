@@ -116,14 +116,15 @@ class Berryimu(MovementSensor):
         # LOGGER.info("mag raw data")
         # LOGGER.info(raw_data)
         x = int(raw_data[1]) << 8 | int(raw_data[0])
-        signed_x = self.parse_Twos_Complement(x)
-        
-        # self.magnetometer.y = raw_data[2] | raw_data[3] << 8
-        # self.magnetometer.z = raw_data[4] | raw_data[5] << 8
-        LOGGER.info("x")
-        LOGGER.info(x)
-        LOGGER.info("signed x")
-        LOGGER.info(signed_x)
+        y = raw_data[2] | raw_data[3] << 8
+        z = raw_data[4] | raw_data[5] << 8
+
+        # x,y,z are unsigned, parse the twos complement to sign them.
+        self.magnetometer.x = self.parse_Twos_Complement(x)
+        self.magnetometer.y = self.parse_Twos_Complement(y)
+        self.magnetometer.z = self.parse_Twos_Complement(z)
+
+
     
      #Takes an unsigned 16-bit int representing a 2C number
     #Returns the signed number it represents
@@ -148,7 +149,7 @@ class Berryimu(MovementSensor):
          heading = 180 * math.atan2(self.magnetometer.y, self.magnetometer.x)
          if heading < 0:
               heading += 360
-         #LOGGER.info(heading)
+         LOGGER.info(heading)
     
 
 
