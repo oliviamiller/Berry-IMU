@@ -1,8 +1,7 @@
 from typing import ClassVar, Mapping, Tuple
-from typing import ClassVar, Mapping, Any, Dict, Optional, List, cast
+from typing import ClassVar, Mapping, Any, Dict, Optional
 from typing_extensions import Self
 
-from viam.module.types import Reconfigurable
 from viam.proto.app.robot import ComponentConfig
 from viam.proto.common import ResourceName
 from viam.resource.base import ResourceBase
@@ -10,7 +9,6 @@ from viam.resource.types import Model, ModelFamily
 
 from viam.components.movement_sensor import MovementSensor
 from viam.logging import getLogger
-from viam.errors import MethodNotImplementedError
 from viam.proto.common import GeoPoint, Orientation, Vector3
 from smbus import SMBus
 from . import constants
@@ -91,8 +89,6 @@ class Berryimu(MovementSensor):
         angles = self.get_acc_angles()
         self.euler_angles =  self.euler_angles = {'roll': angles.x, 'pitch': angles.y, 'yaw': 0}
 
-        
-
     async def get_readings(
         self, *, extra: Optional[Mapping[str, Any]] = None, timeout: Optional[float] = None, **kwargs
     ) -> Mapping[str, Any]:
@@ -146,8 +142,6 @@ class Berryimu(MovementSensor):
     ) -> Mapping[str, float]:
         raise NotImplementedError
     
-
-    
     def read(self):
         # This loop must run for the same amount of time each loop to accurately complete the complementary filter. 
         while True:
@@ -158,8 +152,6 @@ class Berryimu(MovementSensor):
             self.orientation = self.calculate_orientation()
             elapsed = time.time() - now
             time.sleep(dt - elapsed) # full iteration takes 80 ms
-
-    
 
     def calculate_compass_heading(self):
         raw_data = self.i2cbus.read_i2c_block_data(constants.MAG_ADDRESS,  constants.OUT_X_L, 6)
@@ -188,8 +180,6 @@ class Berryimu(MovementSensor):
 
         return heading
         
-
-
     def get_acceleration(self):
        raw_data = self.i2cbus.read_i2c_block_data(constants.AG_ADDRESS, constants.OUTX_L_XL, 6)
        self.accelerometer_raw = utils.parse_output(raw_data)
@@ -211,7 +201,6 @@ class Berryimu(MovementSensor):
        self.velocity.z = values.z *  constants.G_GAIN
 
        return self.velocity
-
 
     def get_gyro_angles(self):
          # multiply the velocity by the time between readings to get the angle moved. 
@@ -249,7 +238,6 @@ class Berryimu(MovementSensor):
         # convert theta radians to degrees
         orientation.theta = math.degrees(orientation.theta)
         return orientation
-
 
     async def close( self, *, extra: Optional[Dict[str, Any]] = None, timeout: Optional[float] = None, **kwargs):
         self.i2cbus.close()
