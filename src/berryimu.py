@@ -18,6 +18,7 @@ from . import utils
 import time
 import math
 import threading
+import asyncio
 from .orientation_vector import euler_angles_to_orientation_vector
 
 
@@ -41,70 +42,82 @@ class Berryimu(MovementSensor):
     @classmethod
     def new(cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> Self:
         berryimu = cls(config.name)
+        berryimu.reconfigure(config, dependencies)
+        b = threading.Thread(name='readings', target=berryimu.read)
+        b.start()
+        return berryimu
+    
+    def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]):
         bus = config.attributes.fields["i2c_bus"].number_value
         
-        ## open the i2c bus
-        berryimu.i2cbus = SMBus(bus)
-        berryimu.acceleration = Vector3(x = 0, y = 0, z = 0)
-        berryimu.accelerometer_raw = Vector3(x = 0, y = 0, z = 0)
-        berryimu.velocity = Vector3(x = 0, y = 0, z = 0)
-        berryimu.gyro_angles = Vector3(x = 0, y = 0, z = 0)
-        berryimu.compass_heading = 0
-        berryimu.accelerometer_angles =  Vector3(x = 0, y = 0, z = 0)
-        berryimu.euler_angles = {'roll': 0, 'pitch': 0, 'yaw': 0}
-        berryimu.calibrate = False
+        # open the i2c bus
+        self.i2cbus = SMBus(bus)
+        self.acceleration = Vector3(x = 0, y = 0, z = 0)
+        self.accelerometer_raw = Vector3(x = 0, y = 0, z = 0)
+        self.velocity = Vector3(x = 0, y = 0, z = 0)
+        self.gyro_angles = Vector3(x = 0, y = 0, z = 0)
+        self.compass_heading = 0
+        self.accelerometer_angles =  Vector3(x = 0, y = 0, z = 0)
+        self.euler_angles = {'roll': 0, 'pitch': 0, 'yaw': 0}
+        self.orientation = Orientation(o_x = 0, o_y = 0, o_z = 0, theta = 0)
+        self.calibrate = False
 
         if "hard_iron_x_max" in config.attributes.fields:
-            berryimu.calibrate = True
-            berryimu.hard_iron_x_max = config.attributes.fields["hard_iron_x_max"].number_value
+            self.calibrate = True
+            self.hard_iron_x_max = config.attributes.fields["hard_iron_x_max"].number_value
         if "hard_iron_y_max" in config.attributes.fields:
-            berryimu.hard_iron_y_max = config.attributes.fields["hard_iron_y_max"].number_value
+            self.hard_iron_y_max = config.attributes.fields["hard_iron_y_max"].number_value
         if "hard_iron_x_min" in config.attributes.fields:
-            berryimu.hard_iron_x_min = config.attributes.fields["hard_iron_x_min"].number_value
+            self.hard_iron_x_min = config.attributes.fields["hard_iron_x_min"].number_value
         if "hard_iron_y_min" in config.attributes.fields:
-            berryimu.hard_iron_y_min = config.attributes.fields["hard_iron_y_min"].number_value
+            self.hard_iron_y_min = config.attributes.fields["hard_iron_y_min"].number_value
         if "soft_iron_x_max" in config.attributes.fields:
-            berryimu.soft_iron_x_max = config.attributes.fields["soft_iron_x_max"].number_value
+            self.soft_iron_x_max = config.attributes.fields["soft_iron_x_max"].number_value
         if "soft_iron_y_max" in config.attributes.fields:
-            berryimu.soft_iron_y_max = config.attributes.fields["soft_iron_y_max"].number_value
+            self.soft_iron_y_max = config.attributes.fields["soft_iron_y_max"].number_value
         if "soft_iron_x_min" in config.attributes.fields:
-            berryimu.soft_iron_x_min = config.attributes.fields["soft_iron_x_min"].number_value
+            self.soft_iron_x_min = config.attributes.fields["soft_iron_x_min"].number_value
         if "soft_iron_y_min" in config.attributes.fields:
-            berryimu.soft_iron_y_min = config.attributes.fields["soft_iron_y_min"].number_value
+            self.soft_iron_y_min = config.attributes.fields["soft_iron_y_min"].number_value
 
-        utils.init_accelerometer(berryimu.i2cbus)
-        utils.init_gyroscope(berryimu.i2cbus)
-        utils.init_magnetometer(berryimu.i2cbus)
+        utils.init_accelerometer(self.i2cbus)
+        utils.init_gyroscope(self.i2cbus)
+        utils.init_magnetometer(self.i2cbus)
 
 
         # initialize the euler angles to the accelerometer roll and pitch, which will be used in 
         # the complementary filtering
-        berryimu.get_acceleration()
-        angles = berryimu.get_acc_angles()
-        berryimu.euler_angles =  berryimu.euler_angles = {'roll': angles.x, 'pitch': angles.y, 'yaw': 0}
+        self.get_acceleration()
+        angles = self.get_acc_angles()
+        self.euler_angles =  self.euler_angles = {'roll': angles.x, 'pitch': angles.y, 'yaw': 0}
 
-        b = threading.Thread(name='readings', target=berryimu.read)
-        b.start()
-
-        return berryimu
-    
-    def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]):
-        return None
+        
 
     async def get_readings(
         self, *, extra: Optional[Mapping[str, Any]] = None, timeout: Optional[float] = None, **kwargs
     ) -> Mapping[str, Any]:
-         readings = await MovementSensor.get_readings(self)
-         return readings
-
+            readings = {}
+            (av, la, comp, orient) = await asyncio.gather(
+            self.get_angular_velocity(extra=extra, timeout=timeout),
+            self.get_linear_acceleration(extra=extra, timeout=timeout),
+            self.get_compass_heading(extra=extra, timeout=timeout),
+            self.get_orientation(extra=extra, timeout=timeout),
+            return_exceptions=True,
+        )
+            readings["angular_velocity"] = av
+            readings["linear_acceleration"] = la
+            readings["compass_heading"] = comp
+            readings["orientation"] = orient
+            readings["euler_angles"] = self.euler_angles
+            return readings
 
     async def get_position(
         self, *, extra: Optional[Dict[str, Any]] = None, timeout: Optional[float] = None, **kwargs
     ) -> Tuple[GeoPoint, float]:
-         return NotImplementedError
+         raise NotImplementedError
 
     async def get_linear_velocity(self, *, extra: Optional[Dict[str, Any]] = None, timeout: Optional[float] = None, **kwargs) -> Vector3:
-          return NotImplementedError
+          raise NotImplementedError
     
     async def get_angular_velocity(self, *, extra: Optional[Dict[str, Any]] = None, timeout: Optional[float] = None, **kwargs) -> Vector3:
           return self.velocity
@@ -131,7 +144,7 @@ class Berryimu(MovementSensor):
     async def get_accuracy(
         self, *, extra: Optional[Dict[str, Any]] = None, timeout: Optional[float] = None, **kwargs
     ) -> Mapping[str, float]:
-        return NotImplementedError
+        raise NotImplementedError
     
 
     
@@ -152,7 +165,6 @@ class Berryimu(MovementSensor):
         raw_data = self.i2cbus.read_i2c_block_data(constants.MAG_ADDRESS,  constants.OUT_X_L, 6)
         values = utils.parse_output(raw_data)
         if self.calibrate:
-
             # hard iron distortion correction
             values.x -= (self.hard_iron_x_min + self.hard_iron_x_max) /2
             values.y -= (self.hard_iron_y_min + self.hard_iron_y_max) /2
@@ -163,10 +175,17 @@ class Berryimu(MovementSensor):
             ratio = scale_y / scale_x
             values.x *= ratio
             values.y *= ratio
+        
+        # tilt compensation.
+        values.x = values.x * math.cos(self.euler_angles['pitch']) + values.z * math.sin(self.euler_angles['pitch'])
+        
+        values.y = values.x * math.sin(self.euler_angles['roll'])  * math.sin(self.euler_angles['pitch']) + values.y * math.cos(self.euler_angles['roll']) 
+        - values.z * math.sin(self.euler_angles['roll']) * math.cos(self.euler_angles['pitch'])
 
         heading = 180 * math.atan2(values.y, values.x) / math.pi
         if heading < 0:
               heading += 360
+
         return heading
         
 
@@ -210,16 +229,6 @@ class Berryimu(MovementSensor):
         
         # calculate roll (x) and pitch (y)
         self.accelerometer_angles.x = math.asin(acc_x_norm)
-
-        if (acc_y_norm/math.cos(self.accelerometer_angles.x)) > 1:
-            LOGGER.error("more than 1")
-            LOGGER.info(self.accelerometer_angles.x)
-            LOGGER.info(acc_y_norm)
-        if(acc_y_norm/math.cos(self.accelerometer_angles.x)) < -1:
-             LOGGER.error("less than -1")
-             LOGGER.info(self.accelerometer_angles.x)
-             LOGGER.info(acc_y_norm)
-
         self.accelerometer_angles.y= math.asin(acc_y_norm/math.cos(self.accelerometer_angles.x))
 
         return self.accelerometer_angles
@@ -232,7 +241,7 @@ class Berryimu(MovementSensor):
         ## complementary fiter is used to combine the readings from the gyro and accelerometer.
         self.euler_angles['roll'] = 0.98*(self.euler_angles['roll'] + self.gyro_angles.x) + 0.02 * self.accelerometer_angles.x
         self.euler_angles['pitch'] = 0.98*(self.euler_angles['pitch'] + self.gyro_angles.y) + 0.02 * self.accelerometer_angles.y
-        self.euler_angles['yaw']= self.compass_heading
+        self.euler_angles['yaw']= math.radians(self.compass_heading)
 
         # convert the euler angles to an orientation vector 
         orientation = euler_angles_to_orientation_vector(self.euler_angles['roll'] ,  self.euler_angles['pitch'],  self.euler_angles['yaw'])

@@ -66,7 +66,7 @@ while time.time() < t_end:
          soft_iron_y_max = values.y
         if values.y < soft_iron_y_min:
          soft_iron_y_min = values.y
-        time.sleep(0.5)
+        time.sleep(0.025)
 
 print("copy and paste this config into the attributes for your berryIMU")
 print(f"\"hard_iron_x_min\": {hard_iron_x_min},")
