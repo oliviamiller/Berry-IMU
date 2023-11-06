@@ -77,13 +77,3 @@ print(f"\"soft_iron_x_min\": {soft_iron_x_min},")
 print(f"\"soft_iron_x_max\": {soft_iron_x_max},")
 print(f"\"soft_iron_y_min\": {soft_iron_y_min},")
 print(f"\"soft_iron_y_max\": {soft_iron_y_max}")
-
-
-		
-
-
-
-
-		
-	
-

@@ -178,7 +178,7 @@ class Berryimu(MovementSensor):
         
         # tilt compensation.
         values.x = values.x * math.cos(self.euler_angles['pitch']) + values.z * math.sin(self.euler_angles['pitch'])
-        
+
         values.y = values.x * math.sin(self.euler_angles['roll'])  * math.sin(self.euler_angles['pitch']) + values.y * math.cos(self.euler_angles['roll']) 
         - values.z * math.sin(self.euler_angles['roll']) * math.cos(self.euler_angles['pitch'])
 
@@ -253,35 +253,3 @@ class Berryimu(MovementSensor):
 
     async def close( self, *, extra: Optional[Dict[str, Any]] = None, timeout: Optional[float] = None, **kwargs):
         self.i2cbus.close()
-
-
-
-
-
-
-    
-
-    
-
-
-
-
-    
-    
-
-
-       
-
-
-
-
-
-    
-        
-
-        
-    
-
-        
-
-        

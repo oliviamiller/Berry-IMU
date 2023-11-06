@@ -33,15 +33,3 @@ def euler_angles_to_orientation_vector(roll, pitch , yaw):
     lib.free_quaternion_memory(quaternion)
     lib.free_orientation_vector_memory(orientation_vector)
     return Orientation(o_x = o_x, o_y = o_y, o_z=o_z, theta=theta) 
-
-
-
-
-
-
-    
-
-
-
-
-
