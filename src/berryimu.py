@@ -1,5 +1,9 @@
-from typing import ClassVar, Mapping, Tuple
-from typing import ClassVar, Mapping, Any, Dict, Optional
+"""Module for the BerryIMU version 3."""
+from typing import ClassVar, Mapping, Any, Dict, Optional, Tuple
+import asyncio
+import time
+import math
+import threading
 from typing_extensions import Self
 
 from viam.proto.app.robot import ComponentConfig
@@ -13,19 +17,15 @@ from viam.proto.common import GeoPoint, Orientation, Vector3
 from smbus import SMBus
 from . import constants
 from . import utils
-import time
-import math
-import threading
-import asyncio
 from .orientation_vector import euler_angles_to_orientation_vector
 
 
 LOGGER = getLogger(__name__)
-dt = 0.08
 
 class Berryimu(MovementSensor):
-    MODEL: ClassVar[Model] = Model(ModelFamily("viam", "movement_sensor"), "berryimu")
+    MODEL: ClassVar[Model] = Model(ModelFamily("viam-labs", "movement_sensor"), "berryimu")
     i2cbus: SMBus
+    calibrate: bool
     acceleration: Vector3
     accelerometer_raw: Vector3
     velocity: Vector3
@@ -34,8 +34,14 @@ class Berryimu(MovementSensor):
     accelerometer_angles: Vector3
     gyro_angles: Vector3
     euler_angles: Vector3
-    calibrate: bool
-    
+    hardoft_iron_x_min: int
+    hard_iron_x_max: int
+    hard_iron_y_min: int
+    hard_iron_y_max: int
+    soft_iron_x_min: int
+    soft_iron_x_max: int
+    soft_iron_y_min: int
+    soft_iron_y_max: int
 
     @classmethod
     def new(cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> Self:
@@ -81,7 +87,6 @@ class Berryimu(MovementSensor):
         utils.init_accelerometer(self.i2cbus)
         utils.init_gyroscope(self.i2cbus)
         utils.init_magnetometer(self.i2cbus)
-
 
         # initialize the euler angles to the accelerometer roll and pitch, which will be used in 
         # the complementary filtering
@@ -142,6 +147,7 @@ class Berryimu(MovementSensor):
     ) -> Mapping[str, float]:
         raise NotImplementedError
     
+    # loops to update all sensor readings
     def read(self):
         # This loop must run for the same amount of time each loop to accurately complete the complementary filter. 
         while True:
@@ -151,8 +157,9 @@ class Berryimu(MovementSensor):
             self.acceleration = self.get_acceleration()
             self.orientation = self.calculate_orientation()
             elapsed = time.time() - now
-            time.sleep(dt - elapsed) # full iteration takes 80 ms
+            time.sleep(constants.DT - elapsed) # full iteration takes 80 ms
 
+    # reads the magnetometer raw values and calculates compass heading
     def calculate_compass_heading(self):
         raw_data = self.i2cbus.read_i2c_block_data(constants.MAG_ADDRESS,  constants.OUT_X_L, 6)
         values = utils.parse_output(raw_data)
@@ -171,8 +178,8 @@ class Berryimu(MovementSensor):
         # tilt compensation.
         values.x = values.x * math.cos(self.euler_angles['pitch']) + values.z * math.sin(self.euler_angles['pitch'])
 
-        values.y = values.x * math.sin(self.euler_angles['roll'])  * math.sin(self.euler_angles['pitch']) + values.y * math.cos(self.euler_angles['roll']) 
-        - values.z * math.sin(self.euler_angles['roll']) * math.cos(self.euler_angles['pitch'])
+        values.y = values.x * math.sin(self.euler_angles['roll'])  * math.sin(self.euler_angles['pitch']) + values.y * math.cos(
+            self.euler_angles['roll']) - values.z * math.sin(self.euler_angles['roll']) * math.cos(self.euler_angles['pitch'])
 
         heading = 180 * math.atan2(values.y, values.x) / math.pi
         if heading < 0:
@@ -184,13 +191,14 @@ class Berryimu(MovementSensor):
        raw_data = self.i2cbus.read_i2c_block_data(constants.AG_ADDRESS, constants.OUTX_L_XL, 6)
        self.accelerometer_raw = utils.parse_output(raw_data)
       
-       #convert the raw readings to acceleration in m/s^2
+       #convert the raw readings to acceleration in m/s^2. Gravity value in NYC.
        self.acceleration.x =  self.accelerometer_raw.x * constants.A_GAIN / 1000 * 9.8065
        self.acceleration.y =  self.accelerometer_raw.y * constants.A_GAIN / 1000 * 9.8065
        self.acceleration.z =  self.accelerometer_raw.z * constants.A_GAIN / 1000 * 9.8065
 
        return self.acceleration
     
+    # read gyroscope and calculate angular velocity in d/s
     def read_angular_velocity(self):
        raw_data = self.i2cbus.read_i2c_block_data(constants.AG_ADDRESS, constants.OUTX_L_G, 6)
        values = utils.parse_output(raw_data)
@@ -202,19 +210,22 @@ class Berryimu(MovementSensor):
 
        return self.velocity
 
+    # Get the gyroscope pitch and roll angles in radians
     def get_gyro_angles(self):
          # multiply the velocity by the time between readings to get the angle moved. 
-        self.gyro_angles.x = math.radians(self.velocity.x * dt)
-        self.gyro_angles.y = math.radians(self.velocity.y * dt)
+        self.gyro_angles.x = math.radians(self.velocity.x * constants.DT)
+        self.gyro_angles.y = math.radians(self.velocity.y * constants.DT)
 
         return self.gyro_angles
     
-   # Get the accelerometer angles in radians 
+   # Get the accelerometer pitch and roll angles in radians 
     def get_acc_angles(self):
 
         # normalize the raw accelerometer values
-        acc_x_norm = self.accelerometer_raw.x / math.sqrt(self.accelerometer_raw.x*self.accelerometer_raw.x + self.accelerometer_raw.y*self.accelerometer_raw.y + self.accelerometer_raw.z*self.accelerometer_raw.z)
-        acc_y_norm = self.accelerometer_raw.y / math.sqrt(self.accelerometer_raw.x*self.accelerometer_raw.x + self.accelerometer_raw.y*self.accelerometer_raw.y + self.accelerometer_raw.z*self.accelerometer_raw.z)
+        acc_x_norm = self.accelerometer_raw.x / math.sqrt(
+            self.accelerometer_raw.x*self.accelerometer_raw.x + self.accelerometer_raw.y*self.accelerometer_raw.y + self.accelerometer_raw.z*self.accelerometer_raw.z)
+        acc_y_norm = self.accelerometer_raw.y / math.sqrt(
+            self.accelerometer_raw.x*self.accelerometer_raw.x + self.accelerometer_raw.y*self.accelerometer_raw.y + self.accelerometer_raw.z*self.accelerometer_raw.z)
         
         # calculate roll (x) and pitch (y)
         self.accelerometer_angles.x = math.asin(acc_x_norm)
@@ -227,13 +238,14 @@ class Berryimu(MovementSensor):
         self.gyro_angles = self.get_gyro_angles()
 
 
-        ## complementary fiter is used to combine the readings from the gyro and accelerometer.
+        # complementary fiter is used to combine the readings from the gyro and accelerometer.
         self.euler_angles['roll'] = 0.98*(self.euler_angles['roll'] + self.gyro_angles.x) + 0.02 * self.accelerometer_angles.x
         self.euler_angles['pitch'] = 0.98*(self.euler_angles['pitch'] + self.gyro_angles.y) + 0.02 * self.accelerometer_angles.y
         self.euler_angles['yaw']= math.radians(self.compass_heading)
 
         # convert the euler angles to an orientation vector 
-        orientation = euler_angles_to_orientation_vector(self.euler_angles['roll'] ,  self.euler_angles['pitch'],  self.euler_angles['yaw'])
+        orientation = euler_angles_to_orientation_vector(
+            self.euler_angles['roll'] ,  self.euler_angles['pitch'],  self.euler_angles['yaw'])
 
         # convert theta radians to degrees
         orientation.theta = math.degrees(orientation.theta)
