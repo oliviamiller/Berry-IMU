@@ -6,6 +6,7 @@ import math
 import threading
 from typing_extensions import Self
 
+from viam.module.types import Reconfigurable
 from viam.proto.app.robot import ComponentConfig
 from viam.proto.common import ResourceName
 from viam.resource.base import ResourceBase
@@ -15,15 +16,13 @@ from viam.components.movement_sensor import MovementSensor
 from viam.logging import getLogger
 from viam.proto.common import GeoPoint, Orientation, Vector3
 from smbus import SMBus
-from . import constants
 from . import utils
 from .orientation_vector import euler_angles_to_orientation_vector
 
 
 LOGGER = getLogger(__name__)
 
-
-class Berryimu(MovementSensor):
+class Berryimu(MovementSensor, Reconfigurable):
     MODEL: ClassVar[Model] = Model(
         ModelFamily("viam-labs", "movement_sensor"), "berryimu"
     )
@@ -45,6 +44,7 @@ class Berryimu(MovementSensor):
     soft_iron_x_max: int
     soft_iron_y_min: int
     soft_iron_y_max: int
+        
 
     @classmethod
     def new(
@@ -52,14 +52,42 @@ class Berryimu(MovementSensor):
     ) -> Self:
         berryimu = cls(config.name)
         berryimu.reconfigure(config, dependencies)
-        b = threading.Thread(name="readings", target=berryimu.read)
-        b.start()
         return berryimu
 
+    @classmethod
+    def validate(cls, config: ComponentConfig):
+        if config.attributes.fields["i2c_bus"].string_value == "":
+            LOGGER.error("i2c_bus attribute is required")
+        if config.attributes.fields["calibrate"].bool_value:
+            if config.attributes.fields[
+                    "hard_iron_x_max"
+                ].number_value <= config.attributes.fields[
+                    "hard_iron_x_min"
+                ].number_value:
+                    LOGGER.error("hard_iron_x_max must be greater than the hard_iron_x_min. Please recalibrate your imu.")
+            if config.attributes.fields[
+                    "hard_iron_y_max"
+                ].number_value <= config.attributes.fields[
+                    "hard_iron_y_min"
+                ].number_value:
+                    LOGGER.error("hard_iron_y_max must be greater than the hard_iron_y_min. Please recalibrate your imu.")
+            if config.attributes.fields[
+                    "soft_iron_x_max"
+                ].number_value <= config.attributes.fields[
+                    "soft_iron_x_min"
+                ].number_value:
+                    LOGGER.error("soft_iron_x_max must be greater than the soft_iron_x_min. Please recalibrate your imu.")
+            if config.attributes.fields[
+                    "soft_iron_y_max"
+                ].number_value <= config.attributes.fields[
+                    "soft_iron_y_min"
+                ].number_value:
+                    LOGGER.error("soft_iron_y_max must be greater than the soft_iron_y_min. Please recalibrate your imu.")
     def reconfigure(
         self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
     ):
-        bus = config.attributes.fields["i2c_bus"].number_value
+        LOGGER.info("RECONFIGURING")
+        bus = int(config.attributes.fields["i2c_bus"].string_value)
 
         # open the i2c bus
         self.i2cbus = SMBus(bus)
@@ -73,36 +101,29 @@ class Berryimu(MovementSensor):
         self.orientation = Orientation(o_x=0, o_y=0, o_z=0, theta=0)
         self.calibrate = False
 
-        if "hard_iron_x_max" in config.attributes.fields:
+        if config.attributes.fields["calibrate"].bool_value:
             self.calibrate = True
             self.hard_iron_x_max = config.attributes.fields[
                 "hard_iron_x_max"
             ].number_value
-        if "hard_iron_y_max" in config.attributes.fields:
             self.hard_iron_y_max = config.attributes.fields[
                 "hard_iron_y_max"
             ].number_value
-        if "hard_iron_x_min" in config.attributes.fields:
             self.hard_iron_x_min = config.attributes.fields[
                 "hard_iron_x_min"
             ].number_value
-        if "hard_iron_y_min" in config.attributes.fields:
             self.hard_iron_y_min = config.attributes.fields[
                 "hard_iron_y_min"
             ].number_value
-        if "soft_iron_x_max" in config.attributes.fields:
             self.soft_iron_x_max = config.attributes.fields[
                 "soft_iron_x_max"
             ].number_value
-        if "soft_iron_y_max" in config.attributes.fields:
             self.soft_iron_y_max = config.attributes.fields[
                 "soft_iron_y_max"
             ].number_value
-        if "soft_iron_x_min" in config.attributes.fields:
             self.soft_iron_x_min = config.attributes.fields[
                 "soft_iron_x_min"
             ].number_value
-        if "soft_iron_y_min" in config.attributes.fields:
             self.soft_iron_y_min = config.attributes.fields[
                 "soft_iron_y_min"
             ].number_value
@@ -120,6 +141,8 @@ class Berryimu(MovementSensor):
             "pitch": angles.y,
             "yaw": 0,
         }
+        b = threading.Thread(name="readings", target=self.read)
+        b.start()
 
     async def get_readings(
         self,
@@ -232,12 +255,12 @@ class Berryimu(MovementSensor):
             self.acceleration = self.get_acceleration()
             self.orientation = self.calculate_orientation()
             elapsed = time.time() - now
-            time.sleep(constants.DT - elapsed)  # full iteration takes 80 ms
+            time.sleep(utils.DT - elapsed)  # full iteration takes 80 ms
 
     # reads the magnetometer raw values and calculates compass heading
     def calculate_compass_heading(self):
         raw_data = self.i2cbus.read_i2c_block_data(
-            constants.MAG_ADDRESS, constants.OUT_X_L, 6
+            utils.MAG_ADDRESS, utils.OUT_X_L, 6
         )
         values = utils.parse_output(raw_data)
         if self.calibrate:
@@ -275,19 +298,19 @@ class Berryimu(MovementSensor):
 
     def get_acceleration(self):
         raw_data = self.i2cbus.read_i2c_block_data(
-            constants.AG_ADDRESS, constants.OUTX_L_XL, 6
+            utils.AG_ADDRESS, utils.OUTX_L_XL, 6
         )
         self.accelerometer_raw = utils.parse_output(raw_data)
 
         # convert the raw readings to acceleration in m/s^2. Gravity value in NYC.
         self.acceleration.x = (
-            self.accelerometer_raw.x * constants.A_GAIN / 1000 * 9.8065
+            self.accelerometer_raw.x * utils.A_GAIN / 1000 * 9.8065
         )
         self.acceleration.y = (
-            self.accelerometer_raw.y * constants.A_GAIN / 1000 * 9.8065
+            self.accelerometer_raw.y * utils.A_GAIN / 1000 * 9.8065
         )
         self.acceleration.z = (
-            self.accelerometer_raw.z * constants.A_GAIN / 1000 * 9.8065
+            self.accelerometer_raw.z * utils.A_GAIN / 1000 * 9.8065
         )
 
         return self.acceleration
@@ -295,22 +318,22 @@ class Berryimu(MovementSensor):
     # read gyroscope and calculate angular velocity in d/s
     def read_angular_velocity(self):
         raw_data = self.i2cbus.read_i2c_block_data(
-            constants.AG_ADDRESS, constants.OUTX_L_G, 6
+            utils.AG_ADDRESS, utils.OUTX_L_G, 6
         )
         values = utils.parse_output(raw_data)
 
         # convert raw readings to velocity in degrees/s
-        self.velocity.x = values.x * constants.G_GAIN
-        self.velocity.y = values.y * constants.G_GAIN
-        self.velocity.z = values.z * constants.G_GAIN
+        self.velocity.x = values.x * utils.G_GAIN
+        self.velocity.y = values.y * utils.G_GAIN
+        self.velocity.z = values.z * utils.G_GAIN
 
         return self.velocity
 
     # Get the gyroscope pitch and roll angles in radians
     def get_gyro_angles(self):
         # multiply the velocity by the time between readings to get the angle moved.
-        self.gyro_angles.x = math.radians(self.velocity.x * constants.DT)
-        self.gyro_angles.y = math.radians(self.velocity.y * constants.DT)
+        self.gyro_angles.x = math.radians(self.velocity.x * utils.DT)
+        self.gyro_angles.y = math.radians(self.velocity.y * utils.DT)
 
         return self.gyro_angles
 
@@ -362,11 +385,3 @@ class Berryimu(MovementSensor):
         orientation.theta = math.degrees(orientation.theta)
         return orientation
 
-    async def close(
-        self,
-        *,
-        extra: Optional[Dict[str, Any]] = None,
-        timeout: Optional[float] = None,
-        **kwargs
-    ):
-        self.i2cbus.close()
