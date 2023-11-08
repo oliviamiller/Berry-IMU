@@ -18,7 +18,7 @@ This module can be installed via the viam registry.
 This will automatically install the module to your robot.
 
 
-You can also (run the module locally)[https://docs.viam.com/registry/configure/#local-modules].
+You can also [run the module locally](https://docs.viam.com/registry/configure/#local-modules).
 
 
 # Calibration
