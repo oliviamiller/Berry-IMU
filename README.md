@@ -18,6 +18,9 @@ This module can be installed via the viam registry.
 This will automatically install the module to your robot.
 
 
+You can also (run the module locally)[https://docs.viam.com/registry/configure/#local-modules].
+
+
 # Calibration
 The BerryIMU's magnetometer needs to be calibrated prior to using this module. Running the calibration script in 'src/calibration.py'
 will provide configuration values to correct for soft and hard iron distortions. 
