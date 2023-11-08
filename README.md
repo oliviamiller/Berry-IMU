@@ -1,5 +1,5 @@
 # Berry-IMU
-This module provides an implementation of the [BerryIMUv3] (https://ozzmaker.com/product/berryimu-accelerometer-gyroscope-magnetometer-barometricaltitude-sensor/) using an i2c connection on ARM64 systems.
+This module provides an implementation of the [BerryIMUv3](https://ozzmaker.com/product/berryimu-accelerometer-gyroscope-magnetometer-barometricaltitude-sensor/) using an i2c connection on ARM64 systems.
 
 ## Setup
 
@@ -22,20 +22,22 @@ This will automatically install the module to your robot.
 The BerryIMU's magnetometer needs to be calibrated prior to using this module. Running the calibration script in 'src/calibration.py'
 will provide configuration values to correct for soft and hard iron distortions. 
 
-Make sure you have the viam python sdk installed on your machine before running the calibration script:
-`pip install viam-sdk`
+be sure to have the viam python sdk installed on your machine before running the calibration script:
+```
+pip install viam-sdk
+```
 
-Run the calibration script on your single board computer by calling `python3 calibration.py` in the `src` folder
+Run the calibration script on your single board computer by calling `python3 calibration.py` in the `src` folder.
 
 The script will prompt you to rotate the IMU in all directions. Make sure you are rotating the IMU 360 degrees in the X, Y, and Z directions 
-to ensure an accurate calibration. Keep Rotating the IMU until the script outputs the calibration values. Copy and paste these values into your
+to ensure an accurate calibration. Keep rotating the IMU until the script outputs the calibration values. Copy and paste these values into your
 IMU component config in the viam app.
 
 # Attributes and Sample Config 
 The attributes for the module are as follows:
-    `i2c_bus` (required): the name of the i2c bus wired to the IMU.
-    `calibrate`: set to true to calibrate the magnetometer using the min and max values.
-    `hard_iron_x_max`, `hard_iron_y_max`, `hard_iron_x_min`, `hard_iron_y_min`, `soft_iron_x_max`, `soft_iron_y_max`, `soft_iron_x_min`, `soft_iron_y_min`, (required when calibrate is `true`): values obtained from
+   - `i2c_bus` (required): the name of the i2c bus wired to the IMU.
+   - `calibrate`: set to true to calibrate the magnetometer using the min and max values.
+   - `hard_iron_x_max`, `hard_iron_y_max`, `hard_iron_x_min`, `hard_iron_y_min`, `soft_iron_x_max`, `soft_iron_y_max`, `soft_iron_x_min`, `soft_iron_y_min`, (required when calibrate is `true`): values obtained from
     calibration script.
 
     ```
@@ -64,12 +66,12 @@ The attributes for the module are as follows:
     ```
 
 # Troubleshooting
-If you see `OSError: 5`, something is likely wrong with the i2c connection. Double check your wiring and ensure the `'i2cdetect` command shows
+If you see `OSError: 5` something is likely wrong with the i2c connection. Double check your wiring and ensure the `i2cdetect` command shows
 the device's i2c addresses.
 
 # Relevant Links
-[BerryIMU v3] (https://ozzmaker.com/product/berryimu-accelerometer-gyroscope-magnetometer-barometricaltitude-sensor/)
-[LSM6DSL Accelerometer and gyroscope datasheet] (https://ozzmaker.com/wp-content/uploads/2020/08/lsm6dsl-datasheet.pdf)
-[LIS3MDL Magnetometer datasheet] (https://ozzmaker.com/wp-content/uploads/2020/08/lis3mdl.pdf)
+[BerryIMU v3](https://ozzmaker.com/product/berryimu-accelerometer-gyroscope-magnetometer-barometricaltitude-sensor/)
+[LSM6DSL Accelerometer and gyroscope datasheet](https://ozzmaker.com/wp-content/uploads/2020/08/lsm6dsl-datasheet.pdf)
+[LIS3MDL Magnetometer datasheet](https://ozzmaker.com/wp-content/uploads/2020/08/lis3mdl.pdf)
 
 
