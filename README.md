@@ -53,6 +53,9 @@ The attributes for the module are as follows:
       "components": [
     {
       "name": "myberryimu"
+      "namespace": "viam-labs"
+      "type": "movement_sensor"
+      "model": "viam-labs:movement_sernsor:berryimu"
       "attributes": {
         "hard_iron_y_max": 1953,
         "soft_iron_x_max": 1069,
@@ -65,9 +68,7 @@ The attributes for the module are as follows:
         "calibrate": true,
         "i2c_bus": "1",
       },
-      "namespace": "viam-labs"
-      "type": "movement_sensor"
-      "model": "viam-labs:movement_sernsor:berryimu"
+      "depends_on": []
             }
         ]
     }
