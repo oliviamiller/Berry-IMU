@@ -40,7 +40,7 @@ The attributes for the module are as follows:
    - `hard_iron_x_max`, `hard_iron_y_max`, `hard_iron_x_min`, `hard_iron_y_min`, `soft_iron_x_max`, `soft_iron_y_max`, `soft_iron_x_min`, `soft_iron_y_min`, (required when calibrate is `true`): values obtained from
     calibration script.
 
-    ```
+```
     {
       "components": [
     {
@@ -63,15 +63,15 @@ The attributes for the module are as follows:
             }
         ]
     }
-    ```
+```
 
 # Troubleshooting
 If you see `OSError: 5` something is likely wrong with the i2c connection. Double check your wiring and ensure the `i2cdetect` command shows
 the device's i2c addresses.
 
 # Relevant Links
-[BerryIMU v3](https://ozzmaker.com/product/berryimu-accelerometer-gyroscope-magnetometer-barometricaltitude-sensor/)
-[LSM6DSL Accelerometer and gyroscope datasheet](https://ozzmaker.com/wp-content/uploads/2020/08/lsm6dsl-datasheet.pdf)
-[LIS3MDL Magnetometer datasheet](https://ozzmaker.com/wp-content/uploads/2020/08/lis3mdl.pdf)
+- [BerryIMU v3](https://ozzmaker.com/product/berryimu-accelerometer-gyroscope-magnetometer-barometricaltitude-sensor/)
+- [LSM6DSL Accelerometer and gyroscope datasheet](https://ozzmaker.com/wp-content/uploads/2020/08/lsm6dsl-datasheet.pdf)
+- [LIS3MDL Magnetometer datasheet](https://ozzmaker.com/wp-content/uploads/2020/08/lis3mdl.pdf)
 
 
