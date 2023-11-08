@@ -42,6 +42,14 @@ The attributes for the module are as follows:
 
 ```
     {
+    "modules": [
+    {
+      "type": "registry",
+      "name": "berryimu",
+      "module_id": "viam-labs:berryimu",
+      "version": "0.0.1"
+    }
+    ],
       "components": [
     {
       "name": "myberryimu"
