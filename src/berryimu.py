@@ -4,6 +4,7 @@ import asyncio
 import time
 import math
 import threading
+import traceback
 from typing_extensions import Self
 
 from viam.module.types import Reconfigurable
@@ -253,13 +254,17 @@ class Berryimu(MovementSensor, Reconfigurable):
     def read(self):
         # This loop must run for the same amount of time each loop to accurately complete the complementary filter.
         while True:
-            now = time.time()
-            self.velocity = self.read_angular_velocity()
-            self.compass_heading = self.calculate_compass_heading()
-            self.acceleration = self.get_acceleration()
-            self.orientation = self.calculate_orientation()
-            elapsed = time.time() - now
-            time.sleep(utils.DT - elapsed)  # full iteration takes 80 ms
+            try:
+                now = time.time()
+                self.velocity = self.read_angular_velocity()
+                self.compass_heading = self.calculate_compass_heading()
+                self.acceleration = self.get_acceleration()
+                self.orientation = self.calculate_orientation()
+                elapsed = time.time() - now
+                time.sleep(utils.DT - elapsed)  # full iteration takes 80 ms
+            except Exception:
+                # if an error occurs, log it and continue the loop.
+                LOGGER.error(traceback.print_exc())
 
     # reads the magnetometer raw values and calculates compass heading
     def calculate_compass_heading(self):
