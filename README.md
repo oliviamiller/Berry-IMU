@@ -9,14 +9,14 @@ Ensure i2c communication is enabled on your single board computer. If you are us
 - Wire the SCL and SDA pins on the board to the corresponding pins on the IMU. The IMU can be powered with the 3.3v pin.
 - You can verify the i2c connection by running `i2cdetect -y 1` on your board. If the IMU is wired correctly, you will see the i2c addresses `1c` and `6a`. 
 
-### Add the `berryimu' module to a robot
+### Add the berryimu module to a robot
 To use this module, follow the instructions to [add a module from the Viam Registry](https://docs.viam.com/registry/configure/#add-a-modular-resource-from-the-viam-registry). Search for the `berryimu` movement sensor.
 Click **Add module**, choose a name, and click **Create** to add the `berryimu` module and the modular movement sensor it provides.
 You can also [run the module locally](https://docs.viam.com/registry/configure/#local-modules).
 
 
 # Calibration
-The BerryIMU's magnetometer needs to be calibrated prior to using this module. Running the calibration script in 'src/calibration.py'
+The BerryIMU's magnetometer needs to be calibrated prior to using this module. Running the calibration script in `src/calibration.py`
 will provide configuration values to correct for soft and hard iron distortions. 
 
 To run the calibration script, you must install the Viam Python SDK on your single board computer:
