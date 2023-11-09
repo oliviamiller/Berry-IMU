@@ -65,9 +65,9 @@ The attributes for the module are as follows:
         "soft_iron_x_min": -1069,
         "soft_iron_y_max": 1069,
         "soft_iron_y_min": -1056,
-        "hard_iron_y_min": -1029
+        "hard_iron_y_min": -1029,
         "calibrate": true,
-        "i2c_bus": "1",
+        "i2c_bus": "1"
       },
       "depends_on": []
             }
