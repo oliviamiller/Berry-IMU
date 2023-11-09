@@ -50,15 +50,15 @@ The attributes for the module are as follows:
       "type": "registry",
       "name": "berryimu",
       "module_id": "viam-labs:berryimu",
-      "version": "0.0.1"
+      "version": "0.0.2"
     }
     ],
       "components": [
     {
       "name": "myberryimu"
-      "namespace": "viam-labs"
+      "namespace": "rdk"
       "type": "movement_sensor"
-      "model": "viam-labs:movement_sernsor:berryimu"
+      "model": "viam-labs:movement_sensor:berryimu"
       "attributes": {
         "hard_iron_y_max": 1953,
         "soft_iron_x_max": 1069,
