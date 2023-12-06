@@ -16,10 +16,10 @@ from viam.resource.types import Model, ModelFamily
 from viam.components.movement_sensor import MovementSensor
 from viam.logging import getLogger
 from viam.proto.common import GeoPoint, Orientation, Vector3
-from smbus import SMBus
 from . import utils
 from .orientation_vector import euler_angles_to_orientation_vector
 
+import smbus
 
 LOGGER = getLogger(__name__)
 
@@ -28,7 +28,7 @@ class Berryimu(MovementSensor, Reconfigurable):
     MODEL: ClassVar[Model] = Model(
         ModelFamily("viam-labs", "movement_sensor"), "berryimu"
     )
-    i2cbus: SMBus
+    i2cbus: smbus.SMBus
     calibrate: bool
     acceleration: Vector3
     accelerometer_raw: Vector3
@@ -95,7 +95,7 @@ class Berryimu(MovementSensor, Reconfigurable):
         bus = int(config.attributes.fields["i2c_bus"].string_value)
 
         # open the i2c bus
-        self.i2cbus = SMBus(bus)
+        self.i2cbus = smbus.SMBus(bus)
         self.acceleration = Vector3(x=0, y=0, z=0)
         self.accelerometer_raw = Vector3(x=0, y=0, z=0)
         self.velocity = Vector3(x=0, y=0, z=0)
