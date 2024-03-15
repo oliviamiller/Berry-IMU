@@ -67,16 +67,16 @@ Assign each attribute to the corresponding calibration value obtained when you c
 
 |    **Name**                  |   **Type**    |  **Inclusion**| **Description** |
 | ---------------------------- | ------------- | ------------- | --------------- |
-| `hard_iron_y_max` |  int   | Required  | Maximum value for the y-axis hard iron distortion correction.|
-| `soft_iron_x_max` |  int   | Required  | Maximum value for the x-axis soft iron distortion correction.|
-| `hard_iron_x_min` |  int   | Required | Minimum value for the x-axis hard iron distortion correction.  |
-| `hard_iron_x_max` |  int   | Required | Maximum value for the x-axis hard iron distortion correction.  |
-| `soft_iron_x_min` |  int   | Required | Minimum value for the x-axis soft iron distortion correction.  |
-| `soft_iron_y_max` |  int   | Required | Maximum value for the y-axis soft iron distortion correction.  |
-| `soft_iron_y_min` |  int   | Required | Minimum value for the y-axis soft iron distortion correction.  |
-| `hard_iron_y_min` |  int   | Required | Minimum value for the y-axis hard iron distortion correction.  |
+| `hard_iron_y_max` |  int   | **Required**  | Maximum value for the y-axis hard iron distortion correction.|
+| `soft_iron_x_max` |  int   | **Required**  | Maximum value for the x-axis soft iron distortion correction.|
+| `hard_iron_x_min` |  int   | **Required** | Minimum value for the x-axis hard iron distortion correction.  |
+| `hard_iron_x_max` |  int   | **Required** | Maximum value for the x-axis hard iron distortion correction.  |
+| `soft_iron_x_min` |  int   | **Required** | Minimum value for the x-axis soft iron distortion correction.  |
+| `soft_iron_y_max` |  int   | **Required** | Maximum value for the y-axis soft iron distortion correction.  |
+| `soft_iron_y_min` |  int   | **Required** | Minimum value for the y-axis soft iron distortion correction.  |
+| `hard_iron_y_min` |  int   | **Required** | Minimum value for the y-axis hard iron distortion correction.  |
 | `calibrate` |  bool   | Optional | Flag indicating whether callibration is enabled to alibrate the magnetometer using the min and max values (true is enabled). |
-| `i2c_bus` |  str   | Required | Name of the I2C bus wired to the IMU. |
+| `i2c_bus` |  str   | **Required** | Name of the I2C bus wired to the IMU. |
 
 #### Example configurations
 
