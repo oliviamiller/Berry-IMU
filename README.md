@@ -53,6 +53,9 @@ On the new component panel, copy and paste the following attribute template into
 ```
 
 Then click **Save config** to save your changes.
+
+> For more information, see [Configure a Machine](https://docs.viam.com/manage/configuration/).
+
  
 ### Attributes
 
@@ -115,10 +118,12 @@ Verify the I2C connection by running the following command on your board:
 
 If the IMU is wired correctly, the output of the command will be the I2C addresses `1c` and `6a`. This indicates that the IMU is successfully connected and detected by your system.
 
-> [!TIP]
-> To troubleshoot if you encounter an `OSError: 5`, check your I2C connection.
-> Ensure your wiring is correct and that the `i2cdetect` command successfully detects the device's I2C addresses.
+### Next Steps
 
-## Next Steps
 - To test your movement sensor, go to the [**Control tab**](https://docs.viam.com/manage/fleet/robots/#control).
 - To write code against your movement sensor, use one of the [available SDKs](https://docs.viam.com/program/).
+
+## Troubleshooting
+
+To troubleshoot if you encounter an `OSError: 5`, check your I2C connection. Ensure your wiring is correct and that the `i2cdetect` command successfully detects the device's I2C addresses.
+
