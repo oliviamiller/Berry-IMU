@@ -4,14 +4,15 @@ This module implements the `rdk:movement_sensor` API in a `berryimu` model.
 You can use this module to interface with the BerryIMU v3 [accelerometer, gyroscope](https://ozzmaker.com/wp-content/uploads/2020/08/lsm6dsl-datasheet.pdf), [magnetometer](https://ozzmaker.com/wp-content/uploads/2020/08/lis3mdl.pdf), and [barometric altitude sensor](https://www.mouser.com/pdfdocs/BST-BMP388-DS001-01.pdf) using an I2C connection on ARM64 systems.
 
 ## Requirements
+### Hardware
 
 - [BerryIMU v3](https://ozzmaker.com/product/berryimu-accelerometer-gyroscope-magnetometer-barometricaltitude-sensor/) movement sensor
 - Single board computer running Linux Arm64
     - Enable I2C communication on your single board computer. If you are using a Raspberry Pi, see [Enable communication protocols](https://docs.viam.com/get-started/installation/prepare/rpi-setup/#enable-communication-protocols).
-- Install the [Viam Python SDK](https://python.viam.dev/) on your single board computer:
-```sh
-pip install viam-sdk
-```
+
+### Software
+
+- Install the [Viam Python SDK](https://docs.viam.com/build/program/#requirements) on your single board computer.
 - Calibrate your IMU sensor by running the following command in the BerryIMU module's `src` directory: 
 
 ```sh
@@ -24,7 +25,7 @@ python3 calibration.py
 
 ## Build and Run 
 
-To use this module, follow the instructions to [add a module from the Viam Registry](https://docs.viam.com/registry/configure/#add-a-modular-resource-from-the-viam-registry) and select the `viam-labs:movement_sensor:berryimu` model from the [`berryimu` module]((https://app.viam.com/module/viam-labs/berryimu).
+To use this module, follow the instructions to [add a module from the Viam Registry](https://docs.viam.com/registry/configure/#add-a-modular-resource-from-the-viam-registry) and select the `viam-labs:movement_sensor:berryimu` model from the [`berryimu` module](https://app.viam.com/module/viam-labs/berryimu).
 
 ## Configure your BerryIMU movement sensor
 
@@ -94,6 +95,7 @@ Assign each attribute to the corresponding calibration value obtained when you c
     "i2c_bus": "1"
 }
 ```
+
 ```json
 {
     "calibrate": false,
@@ -125,5 +127,5 @@ If the IMU is wired correctly, the output of the command will be the I2C address
 
 ## Troubleshooting
 
-To troubleshoot if you encounter an `OSError: 5`, check your I2C connection. Ensure your wiring is correct and that the `i2cdetect` command successfully detects the device's I2C addresses.
+If you encounter an `OSError: 5`, check your I2C connection. Ensure your wiring is correct and that the `i2cdetect` command successfully detects the device's I2C addresses.
 
