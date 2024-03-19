@@ -4,6 +4,7 @@ This module implements the `rdk:movement_sensor` API in the `berryimu` model.
 You can use this module to interface with the BerryIMU v3 [accelerometer, gyroscope](https://ozzmaker.com/wp-content/uploads/2020/08/lsm6dsl-datasheet.pdf) and [magnetometer](https://ozzmaker.com/wp-content/uploads/2020/08/lis3mdl.pdf) using an I2C connection on ARM64 systems.
 
 ## Requirements
+
 ### Hardware
 
 - [BerryIMU v3](https://ozzmaker.com/product/berryimu-accelerometer-gyroscope-magnetometer-barometricaltitude-sensor/) movement sensor
