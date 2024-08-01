@@ -1,12 +1,12 @@
 {
-    "module_id": "viam-labs:berryimu",
+    "module_id": "viam-labs:berryimu3",
     "visibility": "public",
     "url": "https://github.com/viam-labs/berry-imu",
     "description": "Implementation of the berryIMU version3 with i2c connection",
     "models": [
       {
         "api": "rdk:component:movement_sensor",
-        "model": "viam-labs:movement_sensor:berryimu"
+        "model": "viam-labs:movement_sensor:berryimu3"
       }
     ],
     "entrypoint": "run.sh"
