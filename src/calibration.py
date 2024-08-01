@@ -67,7 +67,7 @@ while time.time() < t_end:
         soft_iron_y_min = values.y
     time.sleep(0.025)
 
-print("copy and paste this config into the attributes for your berryIMU")
+print("copy and paste this config into the attributes for your berryimu3")
 print(f'"hard_iron_x_min": {hard_iron_x_min},')
 print(f'"hard_iron_x_max": {hard_iron_x_max},')
 print(f'"hard_iron_y_min": {hard_iron_y_min},')

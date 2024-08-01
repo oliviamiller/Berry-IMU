@@ -1,6 +1,6 @@
 from viam.proto.common import Vector3
 
-# Registers and i2c addresses for the LSM6DSL and LIS3MDL chips on the berryIMU.
+# Registers and i2c addresses for the LSM6DSL and LIS3MDL chips on the berryimu3.
 # See datasheets for more info:
 # LSM6DSL accelerometer and gyroscope: https://ozzmaker.com/wp-content/uploads/2020/08/lsm6dsl-datasheet.pdf
 # LIS3MSL magnetometer: https://ozzmaker.com/wp-content/uploads/2020/08/lis3mdl.pdf

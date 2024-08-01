@@ -24,9 +24,9 @@ import smbus
 LOGGER = getLogger(__name__)
 
 
-class Berryimu(MovementSensor, Reconfigurable):
+class Berryimu3(MovementSensor, Reconfigurable):
     MODEL: ClassVar[Model] = Model(
-        ModelFamily("viam-labs", "movement_sensor"), "berryimu"
+        ModelFamily("viam-labs", "movement_sensor"), "berryimu3"
     )
     i2cbus: smbus.SMBus
     calibrate: bool
@@ -51,9 +51,9 @@ class Berryimu(MovementSensor, Reconfigurable):
     def new(
         cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
     ) -> Self:
-        berryimu = cls(config.name)
-        berryimu.reconfigure(config, dependencies)
-        return berryimu
+        berryimu3 = cls(config.name)
+        berryimu3.reconfigure(config, dependencies)
+        return berryimu3
 
     @classmethod
     def validate(cls, config: ComponentConfig):

@@ -1,6 +1,6 @@
-# BerryIMU Module
+# BerryIMU v3 Module
 
-This module implements the `rdk:movement_sensor` API in the `berryimu` model.
+This module implements the `rdk:movement_sensor` API in the `berryimu3` model.
 You can use this module to interface with the BerryIMU v3 [accelerometer, gyroscope](https://ozzmaker.com/wp-content/uploads/2020/08/lsm6dsl-datasheet.pdf) and [magnetometer](https://ozzmaker.com/wp-content/uploads/2020/08/lis3mdl.pdf) using an I2C connection on ARM64 systems.
 
 ## Requirements
@@ -14,27 +14,27 @@ You can use this module to interface with the BerryIMU v3 [accelerometer, gyrosc
 ### Software
 
 - Install the [Viam Python SDK](https://docs.viam.com/build/program/#requirements) on your single board computer.
-- Calibrate your IMU sensor by running the following command in the BerryIMU module's `src` directory: 
+- Calibrate your IMU sensor by running the following command in the BerryIMU v3 module's `src` directory: 
 
 ```sh
 python3 calibration.py
 ```
 
 > [!TIP]
-> During calibration, rotate the BerryIMU 360 degrees in all directions (X,Y, and Z) until the script returns calibration values.
+> During calibration, rotate the BerryIMU v3 360 degrees in all directions (X,Y, and Z) until the script returns calibration values.
 > Note the returned calibration values, as you'll need to set these values into your movement sensor component's attributes during configuration. 
 
 ## Build and Run 
 
-To use this module, follow the instructions to [add a module from the Viam Registry](https://docs.viam.com/registry/configure/#add-a-modular-resource-from-the-viam-registry) and select the `viam-labs:movement_sensor:berryimu` model from the [`berryimu` module](https://app.viam.com/module/viam-labs/berryimu).
+To use this module, follow the instructions to [add a module from the Viam Registry](https://docs.viam.com/registry/configure/#add-a-modular-resource-from-the-viam-registry) and select the `viam-labs:movement_sensor:berryimu3` model from the [`berryimu3` module](https://app.viam.com/module/viam-labs/berryimu3).
 
-## Configure your BerryIMU movement sensor
+## Configure your BerryIMU v3 movement sensor
 
 > [!NOTE]
 > Before configuring your movement sensor, you must [create a machine](https://docs.viam.com/fleet/machines/#add-a-new-machine).
 
 Navigate to the **Config** tab of your machine's page in [the Viam app](https://app.viam.com/). Click on the **Components** subtab and click **Create component**.
-Select the `movement-sensor` type, then select the `berryimu` model.
+Select the `movement-sensor` type, then select the `berryimu3` model.
 Enter a name for your movement sensor, click **Create**.
 
 On the new component panel, copy and paste the following attribute template into your movement sensor's **Attributes** box:
@@ -61,7 +61,7 @@ Then click **Save config** to save your changes.
  
 ### Attributes
 
-Assign each attribute to the corresponding calibration value obtained when you calibrated the BerryIMU.
+Assign each attribute to the corresponding calibration value obtained when you calibrated the BerryIMU v3.
 
 > [!NOTE]
 > All `min` an `max` attributes are **optional** if the `calibrate` attribute is not set to `true` and **required** when calibration is enabled.
